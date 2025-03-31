@@ -1,5 +1,5 @@
 -module(rudy).
--import(http,[parse_request/1]).
+-import(http, [parse_request/1]).
 -export([init/1]).
 
 init(Port) ->
@@ -9,14 +9,14 @@ init(Port) ->
             handler(Listen),
             gen_tcp:close(Listen),
             ok;
-    {error, Error} ->
-        error
+        {error, Error} ->
+            error
     end.
 
 handler(Listen) ->
     case gen_tcp:accept(Listen) of
         {ok, Client} ->
-            request(Client),
+            spawn(fun() -> request(Client) end),
             handler(Listen);
         {error, Error} ->
             error
@@ -34,7 +34,16 @@ request(Client) ->
     gen_tcp:close(Client).
 
 reply({{get, URI, _}, _, _}) ->
-    http:ok(URI).
+    serve_file(URI).
 
-ok(Body) ->
-    "HTTP/1.1 200 OK\r\n" ++ "\r\n" ++ Body.
+serve_file(URI) ->
+    FilePath = "public" ++ URI,  % Busca en la carpeta "public"
+    case file:read_file(FilePath) of
+        {ok, Content} ->
+            Response = "HTTP/1.1 200 OK\r\n" ++
+                       "Content-Type: text/html\r\n\r\n" ++
+                       binary_to_list(Content),
+            Response;
+        {error, _} ->
+            "HTTP/1.1 404 Not Found\r\n\r\n404 Not Found"
+    end.
