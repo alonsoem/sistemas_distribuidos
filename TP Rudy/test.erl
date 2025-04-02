@@ -5,7 +5,7 @@ bench(Host, Port) ->
     Start = erlang:system_time(micro_seconds),
     run(100, Host, Port),
     Finish = erlang:system_time(micro_seconds),
-    Finish - Start.
+    string:join(["Elapsed Time:", integer_to_list(Finish - Start), "ms."]," ").
 
 run(N, Host, Port) ->
     if

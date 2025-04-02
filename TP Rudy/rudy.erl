@@ -34,6 +34,7 @@ request(Client) ->
     gen_tcp:close(Client).
 
 reply({{get, URI, _}, _, _}) ->
+    timer:sleep(40),
     serve_file(URI).
 
 serve_file(URI) ->
