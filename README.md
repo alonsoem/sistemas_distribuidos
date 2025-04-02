@@ -1,5 +1,32 @@
 ## Comentarios sobre el TP Rudy
 
+### Preparacion del servidor
+
+Iniciamos el emulador de Erlang
+```
+erl
+```
+
+#### Compilamos los modulos:
+```
+c(http).
+
+c(rudy).
+
+c(server).
+
+c(test).
+
+```
+
+#### Iniciamos el servidor:
+
+```server:start([puerto]).```
+
+Por ejemplo: ``` server:start(8080). ```
+
+
+
 ### Setup
 
 obtuve la ip de la computadora con `ipconfig getifaddr en0`
