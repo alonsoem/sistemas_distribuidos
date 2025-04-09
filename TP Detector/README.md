@@ -48,9 +48,9 @@ Volvemos a hacer el ejercicio pero en dos nodos distintos:
 
 Primero ejecutamos un proucer en un nodo silver y luego de iniciar el consumer cancelamos el primero.
 
-![Inicio producer en un nodo y cancelo](./images/\killproducer.png)
+![Inicio producer en un nodo y cancelo](./images/killproducer.png)
 
 
 El consume se inicia y se cancela el producer para ver si captura la caida:
 
-![Consume refleja el manejo del error](./images/\consumererror.png)
+![Consume refleja el manejo del error](./images/consumererror.png)
