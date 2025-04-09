@@ -34,7 +34,7 @@ Por ejemplo: Inicia el CONSUMER con un proceso de producer.  ``` consumer:start(
 ## Ejercicio en una consola
 Consumer recibe los pings de Producer:
 
-![Producer enviando PING a consumer](\images\ping.png)
+![Producer enviando PING a consumer](/images/ping.png)
 
 
 Verificamos que Producer se detenga y notifique a Consumer:
