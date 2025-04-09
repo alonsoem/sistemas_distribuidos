@@ -4,9 +4,7 @@
     start(Producer) ->
         Consumer = spawn(fun() -> init(Producer,0) end),
         register(client, Consumer).
-        %Monitor = monitor(process, Producer),
-        %Producer ! {hello, self()},
-        %consumer(0, Monitor).
+
 
         
 
@@ -35,7 +33,7 @@
                 consumer(Ping, Monitor);
 
             {bye} ->
-                io:format("CONSUMER STOPED"),
+                io:format("CONSUMER STOPED ~n"),
                 ok
 
             
