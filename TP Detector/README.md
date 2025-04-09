@@ -31,7 +31,7 @@ Por ejemplo: Inicia el CONSUMER con un proceso de producer.  ``` consumer:start(
 
 ### Resultado 
 
-![Producer enviando PING a consumer](/images/ping.png)
+![Producer enviando PING a consumer](/ping.png)
 Con las lineas de reply 
 ```
 reply({{get, URI, _}, _, _}) ->
