@@ -31,6 +31,7 @@ Por ejemplo: Inicia el CONSUMER con un proceso de producer.  ``` consumer:start(
 
 ### Resultado 
 
+## Ejercicio en una consola
 Consumer recibe los pings de Producer:
 
 ![Producer enviando PING a consumer](ping.png)
@@ -39,3 +40,17 @@ Consumer recibe los pings de Producer:
 Verificamos que Producer se detenga y notifique a Consumer:
 
 ![Producer se detiene y notifica a Consumer](producerstop.png)
+
+
+## Ejercicio en dos nodos
+
+Volvemos a hacer el ejercicio pero en dos nodos distintos:
+
+Primero ejecutamos un proucer en un nodo silver y luego de iniciar el consumer cancelamos el primero.
+
+![Inicio producer en un nodo y cancelo](killproducer.png)
+
+
+El consume se inicia y se cancela el producer para ver si captura la caida:
+
+![Consume refleja el manejo del error](consumererror.png)
