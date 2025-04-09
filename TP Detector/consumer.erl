@@ -4,8 +4,6 @@
     start(Producer) ->
         Consumer = spawn(fun() -> init(Producer,0) end),
         register(client, Consumer).
-
-
         
 
     stop() ->
