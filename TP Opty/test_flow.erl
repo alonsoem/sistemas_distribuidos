@@ -9,6 +9,7 @@ run() ->
   % Caso 1: Transacción sin conflictos
   io:format("Caso 1: Transacción sin conflictos~n"),
   Pid1 = server:open(Server),
+  io:format("Caso 1: is_process_alive(Pid1) ~p~n", [is_process_alive(Pid1)]),
   Pid1 ! {read, ref1, 1},
   receive
     {ref1, ok, Value1} ->

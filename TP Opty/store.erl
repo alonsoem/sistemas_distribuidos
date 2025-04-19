@@ -1,8 +1,8 @@
 -module(store).
--export([new/1, stop/1, lookup/2, update/2]).
+-export([new/1, stop/1, lookup/2]).
 
-new(N) ->
-  list_to_tuple(entries(N, [])).
+new(Size) -> % N is the size of the store, the amount of entries
+  list_to_tuple(entries(Size, [])).
 
 stop(Store) ->
   lists:map(fun(E) -> E ! stop end, tuple_to_list(Store)).
@@ -18,8 +18,3 @@ entries(N, Sofar) ->
       Entry = entry:new(0),
       entries(N - 1, [Entry | Sofar])
   end.
-
-update(Writes,Store) ->
-  lists:foreach(fun({Index, Value}) ->
-    element(Index, Store) ! {write, Value}
-                end, Writes).

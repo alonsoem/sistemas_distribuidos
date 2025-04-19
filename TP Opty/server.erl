@@ -16,12 +16,14 @@ open(Server) ->
   Server ! {open, self()},
   receive
     {transaction, Validator, Store} ->
+      io:format("Server received transaction ~p~n", [transaction]),
       handler:start(self(), Validator, Store)
   end.
 
 server(Validator, Store) ->
   receive
     {open, Client} ->
+      io:format("Server: open transaction for client ~p~n", [Client]),
       server(Validator, Store);
     stop ->
       store:stop(Store)

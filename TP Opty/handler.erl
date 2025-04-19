@@ -8,23 +8,40 @@ init(Client, Validator, Store) ->
   handler(Client, Validator, Store, [], []).
 
 handler(Client, Validator, Store, Reads, Writes) ->
-  io:format("Handler started for store ~p and writes:~p  ~n", [Store, Writes]),
-  receive
-    {read, Ref, N} ->
-      case lists:keysearch(N, 1, Writes) of
-        {value, {N, _, Value}} ->
-          Client ! {Ref, ok, Value},
-          handler(Client, Validator, Store, Reads, Writes);
-        false ->
-          handler(Client, Validator, Store, Reads, Writes)
-      end;
-    {Ref, Entry, Value, Time} ->
-      handler(Client, Validator, Store, [{Entry, Value, Time} | Reads], Writes);
-    {write, N, Value} ->
-      Added = [{N, Value, now()} | Writes],
-      handler(Client, Validator, Store, Reads, Added);
-    {commit, Ref} ->
-      Validator ! {validate, Ref, Reads, Writes, Client};
-    abort ->
-      ok
-  end.
+      %io:format("Handler query ~p and writes: ~p  ~n", [Store, Writes]),
+      receive
+          % Maneja una operación de lectura
+          {read, Ref, N} ->
+              % Busca si el valor solicitado ya está en la lista de Writes
+              % Log writes list
+              %io:format("Writes list: ~p~n", [Writes]),
+              case lists:keysearch(N, 1, Writes) of
+                  {value, {N, Value, _}} ->
+                      % Si se encuentra, responde al cliente con el valor
+                      Client ! {Ref, ok, Value},
+                      % Llama recursivamente para continuar el loop
+                      handler(Client, Validator, Store, Reads, Writes);
+                  false ->
+                      % Si no se encuentra, continúa el loop sin cambios
+                      Client ! { notfound },
+                      handler(Client, Validator, Store, Reads, Writes)
+              end;
+          % Maneja una nueva entrada de lectura
+          {Ref, Entry, Value, Time} ->
+              % Agrega la nueva lectura a la lista Reads y continúa el loop
+              handler(Client, Validator, Store, [{Entry, Value, Time} | Reads], Writes);
+          % Maneja una operación de escritura
+          {write, N, Value} ->
+              % Agrega la nueva escritura a la lista Writes con un timestamp
+              Added = [{N, Value, now()} | Writes],
+              % Continúa el loop con la lista actualizada
+              handler(Client, Validator, Store, Reads, Added);
+          % Maneja una solicitud de commit
+          {commit, Ref} ->
+              % Envía un mensaje al Validator para validar las lecturas y escrituras
+              Validator ! {validate, Ref, Reads, Writes, Client};
+          % Maneja una solicitud de abortar la transacción
+          abort ->
+              % Finaliza el proceso sin realizar más acciones
+              ok
+      end.
