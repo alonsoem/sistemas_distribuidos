@@ -8,13 +8,13 @@
 
     init(Name, Lock, Seed, Sleep, Work) ->
         Gui = spawn(gui, init, [Name]),
-        random:seed(Seed, Seed, Seed),
+        random:seed(Seed,Seed,Seed),
         Taken = worker(Name, Lock, [], Sleep, Work, Gui),
         Gui ! stop,
         terminate(Name, Taken).
 
     worker(Name, Lock, Taken, Sleep, Work, Gui) ->
-        Wait = random:uniform(Sleep),
+        Wait = rand:uniform(Sleep),
         receive
             stop ->
                 Taken
@@ -35,7 +35,7 @@
                 io:format("~w: lock taken in ~w ms~n",
                           [Name, T div 1000]),
                 Gui ! taken,
-                timer:sleep(random:uniform(Work)),
+                timer:sleep(rand:uniform(Work)),
                 Gui ! leave,
                 Lock ! release,
                 {taken, T}
