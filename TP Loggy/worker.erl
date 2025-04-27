@@ -1,4 +1,5 @@
 -module(worker).
+-import(time,[zero/0,inc/0]).
 -export([start/5, stop/1, peers/2]).
 
 start(Name, Logger, Seed, Sleep, Jitter) ->
@@ -11,7 +12,8 @@ init(Name, Log, Seed, Sleep, Jitter) ->
     random:seed(Seed, Seed, Seed),
     receive
         {peers, Peers} ->
-            loop(Name, Log, Peers, Sleep, Jitter);
+            WorkerTime = time:zero(),
+            loop(Name, Log, Peers, Sleep, Jitter,WorkerTime);
         stop ->
             ok
     end.
@@ -19,24 +21,26 @@ init(Name, Log, Seed, Sleep, Jitter) ->
 peers(Wrk, Peers) ->
     Wrk ! {peers, Peers}.
 
-loop(Name, Log, Peers, Sleep, Jitter)->
+loop(Name, Log, Peers, Sleep, Jitter,WorkerTime)->
     Wait = random:uniform(Sleep),
     receive
         {msg, Time, Msg} ->
             Log ! {log, Name, Time, {received, Msg}},
-            loop(Name, Log, Peers, Sleep, Jitter);
+            NewWorkerTime=time:merge(WorkerTime,Time),
+            loop(Name, Log, Peers, Sleep, Jitter,NewWorkerTime);
         stop ->
             ok;
         Error ->
             Log ! {log, Name, time, {error, Error}}
     after Wait ->
             Selected = select(Peers),
-            Time = na,
             Message = {hello, random:uniform(100)},
-            Selected ! {msg, Time, Message},
+            NewWorkerTime=time:inc(Name,WorkerTime),
+            Selected ! {msg, NewWorkerTime, Message},
             jitter(Jitter),
-            Log ! {log, Name, Time, {sending, Message}},
-            loop(Name, Log, Peers, Sleep, Jitter)
+            Log ! {log, Name, WorkerTime, {sending, Message}},
+            
+            loop(Name, Log, Peers, Sleep, Jitter,NewWorkerTime)
     end.
 
 select(Peers) ->
