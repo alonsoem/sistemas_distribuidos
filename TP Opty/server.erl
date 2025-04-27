@@ -24,6 +24,7 @@ server(Validator, Store) ->
   receive
     {open, Client} ->
       io:format("Server: open transaction for client ~p~n", [Client]),
+      Client ! {transaction, Validator, Store}, % Enviar respuesta al cliente
       server(Validator, Store);
     stop ->
       store:stop(Store)

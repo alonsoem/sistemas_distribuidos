@@ -8,10 +8,11 @@ init(Client, Validator, Store) ->
   handler(Client, Validator, Store, [], []).
 
 handler(Client, Validator, Store, Reads, Writes) ->
-      %io:format("Handler query ~p and writes: ~p  ~n", [Store, Writes]),
+      io:format("Handler init with pid: ~p  ~n", [self()]),
       receive
           % Maneja una operación de lectura
           {read, Ref, N} ->
+              io:format("Handler: read operation for pid ~p~n", [self()]),
               % Busca si el valor solicitado ya está en la lista de Writes
               % Log writes list
               %io:format("Writes list: ~p~n", [Writes]),
