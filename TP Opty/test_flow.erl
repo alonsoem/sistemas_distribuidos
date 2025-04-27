@@ -5,23 +5,22 @@ run() ->
   io:format("Iniciando pruebas de flujo completo...~n"),
   % Inicializar el servidor con un store de tamaño 3
   Server = server:start(3),
-
+  Ref1 = make_ref(),
   % Caso 1: Transacción sin conflictos
   io:format("Caso 1: Transacción sin conflictos~n"),
   Pid1 = server:open(Server),
-  io:format("Caso 1: is_process_alive(Pid1) ~p~n", [is_process_alive(Pid1)]),
-  Pid1 ! {read, ref1, 1},
+  Pid1 ! {write, 1, 55},
+  Pid1 ! {read, Ref1, 1},
   receive
-    {ref1, ok, Value1} ->
+    {Ref1, ok, Value1} ->
       io:format("Lectura exitosa: ~p~n", [Value1])
   end,
-  Pid1 ! {write, 1, 42},
-  Pid1 ! {commit, ref2},
+  Ref2 = make_ref(),
+  Pid1 ! {commit, Ref2},
   receive
-    {ref2, ok} ->
+    {Ref2, ok} ->
       io:format("Commit exitoso.~n")
   end,
-
   % Caso 2: Transacción con conflicto de escritura
   io:format("Caso 2: Transacción con conflicto de escritura~n"),
   Pid2 = server:open(Server),

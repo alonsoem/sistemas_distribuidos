@@ -2,6 +2,13 @@
 ### Diagrama 
 ![img.png](img.png)
 
+### Para compilar todos los archivos de una vez
+
+```bash
+# En la carpeta de Opty
+chmod +x compile_all.sh
+./compile_all.sh
+```
 
 ### Para correr los tests
 
@@ -20,7 +27,6 @@ ok
 ```
 
 ```bash
-c(server),c(entry),c(handler),c(store),c(validator),c(test_flow).
- 
+## Compilar todo previamente 
 test_flow:run().
 ```
