@@ -7,23 +7,19 @@ start(N) ->
 init(N) ->
   io:format("Iniciando server...~n"),
   Store = store:new(N),
-  io:format("Store inicializado com ~p entradas~n", [N]),
   Validator = validator:start(Store),
-  io:format("Validator inicializado com store ~p~n", [Store]),
   server(Validator, Store).
 
 open(Server) ->
   Server ! {open, self()},
   receive
     {transaction, Validator, Store} ->
-      io:format("Server received transaction ~p~n", [transaction]),
       handler:start(self(), Validator, Store)
   end.
 
 server(Validator, Store) ->
   receive
     {open, Client} ->
-      io:format("Server: open transaction for client ~p~n", [Client]),
       Client ! {transaction, Validator, Store}, % Enviar respuesta al cliente
       server(Validator, Store);
     stop ->
