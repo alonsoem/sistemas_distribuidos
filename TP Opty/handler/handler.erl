@@ -15,9 +15,21 @@ handler(Client, Validator, Store, Reads, Writes) ->
                   {value, {N, Value, _}} ->
                       % Si se encuentra, responde al cliente con el valor
                       Client ! {Ref, ok, Value},
-                      % Llama recursivamente para continuar el loop
                       handler(Client, Validator, Store, Reads, Writes);
                   false ->
+                      % Si no se encuentra en Writes, busca en Store
+                      case store:lookup(N, Store) of
+                          Entry ->
+                              % Si se encuentra en Store, responde al cliente
+                              Entry ! {read, Ref, self()},
+                              % Llama recursivamente para continuar el loop
+                              handler(Client, Validator, Store, Reads, Writes);
+                          _ ->
+                              % Si no se encuentra en Store, envía notfound
+                              Client ! {Ref, notfound},
+                              % Llama recursivamente para continuar el loop
+                              handler(Client, Validator, Store, Reads, Writes)
+                      end,
                       % Si no se encuentra, continúa el loop sin cambios
                       Client ! { notfound },
                       handler(Client, Validator, Store, Reads, Writes)
@@ -25,7 +37,8 @@ handler(Client, Validator, Store, Reads, Writes) ->
           % Maneja una nueva entrada de lectura
           {Ref, Entry, Value, Time} ->
               % Agrega la nueva lectura a la lista Reads y continúa el loop
-              handler(Client, Validator, Store, [{Entry, Value, Time} | Reads], Writes);
+              Client ! {Ref, ok, Value},
+              handler(Client, Validator, Store, [{Entry, Time} | Reads], Writes);
           % Maneja una operación de escritura
           {write, N, Value} ->
               % Agrega la nueva escritura a la lista Writes con un timestamp

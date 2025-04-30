@@ -12,7 +12,6 @@ validator(Store) ->
     {validate, Ref, Reads, Writes, Client} ->
       case validate(Reads) of
         ok ->
-          io:format("Writes: ~p, reads: ~p ~n", [Writes, Reads]),
           update(Writes, Store),
           Client ! {Ref, ok};
         abort ->

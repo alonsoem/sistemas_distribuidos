@@ -23,22 +23,32 @@ run() ->
   end,
   % Caso 2: Transacción con conflicto de escritura
   io:format("Caso 2: Transacción con conflicto de escritura~n"),
+  T0 = server:open(Server),
+  T0 ! {write, 1, 100},
+  Ref3 = make_ref(),
+  T0 ! { commit , Ref3},
+  receive
+    {Ref3, ok} ->
+      io:format("Commit exitoso T0.~n")
+  end,
+
   T2 = server:open(Server),
+  T2 ! {write, 1, 102},
+
   T3 = server:open(Server),
   Ref5 = make_ref(),
-  Ref6 = make_ref(),
-  T2 ! {write, 1, 100},
-  T2 ! {read, Ref5, 1},
+  T3 ! {read, Ref5, 1},
   receive
-    {Ref5, ok, Value2} ->
-      io:format("Lectura exitosa ReadValue: ~p~n", [Value2]),
-      T3 ! {write, 1, Value2 + 1}
-  end,
+  {Ref5, ok, Value2} ->
+    io:format("Lectura exitosa ReadValue: ~p~n", [Value2]),
+    T3 ! {write, 1, Value2 + 1}
+end,
   T2 ! {commit, Ref5},
   receive
-    {Ref5, ok} ->
-      io:format("Transacción 2 commit exitoso.~n")
-  end,
+  {Ref5, ok} ->
+    io:format("Transacción 2 commit exitoso.~n")
+end,
+  Ref6 = make_ref(),
   T3 ! {commit, Ref6},
   receive
     {Ref6, abort} ->
