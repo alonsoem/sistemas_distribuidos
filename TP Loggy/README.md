@@ -27,13 +27,35 @@ Por ejemplo: Inicia el test con un tiempo de sleep de 600 ms y jitter de 100 ms 
 
 Donde:
 
-SLEEP es el tiempo maximo en milisegundos que espera recibir un mensaje antes de intentar el envio de un mensaje.
-JITTER es el tiemp maximo en milisegundos que un worker espera desde que puede enviar un mensaje hasta que lo envia.
+SLEEP es el tiempo máximo en milisegundos que espera recibir un mensaje antes de intentar el envío de un mensaje.
+
+JITTER es el tiempo máximo en milisegundos que un worker espera desde que puede enviar un mensaje hasta que lo envía.
 
 
 
 
-## Ejercicio en una consola
+## Ejercicios en una consola
+
+
+Inicialmente los workers envían los mensajes sin numerar. 
+Se hizo necesario implementar una etiqueta con el tiempo de Lamport para poder pensar en algun tipo de orden.
+
+Una vez implementado mediante las funciones Zero/0, inc/1, merge/2 y leq/2 observamos que los mensajes se empezaron a visualizar pero desordenadamente producto de las demoras inducidas en los workers para enviar y escuchar los mensajes. Que el logger imprimiera los mensajes en el orden que los recibia tambien era parte del problema.
+
+Como cada worker puede enviar el mensaje en cualquier momento necesitamos saber en que momento podriamos comenzar a imprimir los mensajes.¿Si tengo 4 workers tengo que esperar 4 mensajes con un mismo timestamp para saber que los puedo imprimir? ¿Puede que reciba 4 mensajes con 4 timestamp distintos? ¿Si es asi se pueden imprimir? ¿Que necesito para entender que un mensaje es seguro de imprimir?
+
+Entonces implementamos un clock que permite mantener actualizado la etiqueta de tiempo que lleva cada worker. Pero eso no basta porque para poder imprimir un mensaje tengo que saber que no vendra posteriormente uno con una etiqueta anterior. Por este motivo implementamos una cola de retencion donde mantendremos los mensajes recibidos ordenados.
+
+Entonces estaremos esperando los mensajes 0, 1 ,2 ,3 en ese orden. Cuando todoss los workers tengan mensajes superiores al 0 sera seguro imprimir los mensajes con timestampo 0 y asi sucesivamente.
+
+Pero no es todo. Podemos recibir un mensaje de STOP y si simplemente nos detemmos nos puede quedar una cola de retencion con mensajes que no son seguros de imprimir para nosotros.
+
+Bueno, esto nos hizo ver que en realidad si los tenemos ordenados ya es seguro imprimirlos puesto que no llegará ningun otro mensaje luego.
+
+
+
+
+
 El logger imprime los mensajes a medida que corresponde hacerlo y en orden:
 
 ![Respuesta del logger](./images/corrida.png)
