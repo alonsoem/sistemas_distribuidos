@@ -17,7 +17,6 @@ entry(Value, Time) ->
         Read == Time ->
           Handler ! {Ref, ok};
         true ->
-          io:format("Entry ~p Read is ~p and Time is ~p ~n", [self(), Read, Time]),
           Handler ! {Ref, abort}
       end,
       entry(Value, Time);
