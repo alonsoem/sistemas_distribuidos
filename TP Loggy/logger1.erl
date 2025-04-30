@@ -10,29 +10,27 @@ stop(Logger) ->
     Logger ! stop.
 
 init(Nodes) ->
-    %Inicializo los nodos en 0 (reloj)
-    %NewNodes = lists:map(fun(A)->{A,0} end,Nodes),
-    NewNodes=time:clock(Nodes),
+    Clock=time:clock(Nodes),
 
-    io:format("Nodes: ~w ~n", [NewNodes]),
-    loop(NewNodes,[],0).
+    io:format("Nodes: ~w ~n", [Clock]),
+    loop(Clock,[],0).
 
 
-loop(Nodes,Messages,SafeTime) ->
+loop(Clock,Messages,SafeTime) ->
     
     receive
         {log, From, Time, Msg} ->
-            UpdatedNodes=time:update (From,Time,Nodes),
+            UpdatedClock=time:update (From,Time,Clock),
             UpdatedMessages = mergeMsg(Messages,From,Time,Msg),
             UpdatedSortedMessages= lists:keysort(2, UpdatedMessages),
             
-            case time:safe(SafeTime,Nodes) of
+            case time:safe(SafeTime,Clock) of
                 true -> 
                     PendingMessages = print(UpdatedSortedMessages,SafeTime),
-                    loop(UpdatedNodes,PendingMessages,SafeTime+1);
+                    loop(UpdatedClock,PendingMessages,SafeTime+1);
 
                 false -> 
-                    loop(UpdatedNodes,UpdatedSortedMessages,SafeTime)
+                    loop(UpdatedClock,UpdatedSortedMessages,SafeTime)
             end;
 
             
@@ -48,7 +46,7 @@ printPending(Messages,SafeTime)->
     %Imprime los mensajes pendientes en la cola Messages
     case Messages==[] of
         true->
-            io:format("NO HAY MAS MENSAJES");
+            io:format("NO HAY MAS MENSAJES~n");
         false -> 
             PendingMessages=print(Messages,SafeTime),
             if 

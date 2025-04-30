@@ -29,18 +29,13 @@
         end.
 
 
-
-
     clock(Nodes)->
         %crea un clock y lo devuelve
-        %clock:start(Nodes).
         lists:map(fun(A)->{A,0} end,Nodes).
-        
-        
+              
         
     update(From, Time, Clock)->
         %retorna un reloj que haya sido actualizado dado que hemos recibido un mensaje de log de un nodo en determinado momento.
-%        Clock!{update,Node,Time}.
         lists:keyreplace(From,1,Clock,{From,Time}).
 
     
