@@ -1,5 +1,5 @@
 -module(time).
--export([zero/0,inc/2,merge/2]).
+-export([zero/0,inc/2,merge/2,clock/1,safe/2,update/3]).
 
     %retorna un valor Lamport inicial (puede ser 0).
     zero() ->
@@ -30,20 +30,21 @@
 
 
 
-    %retorna un reloj que pueda llevar cuenta de los nodos
+
     clock(Nodes)->
-        clock:start(Nodes).
+        %crea un clock y lo devuelve
+        %clock:start(Nodes).
+        lists:map(fun(A)->{A,0} end,Nodes).
         
-
-    %retorna un reloj que haya sido actualizado dado que hemos recibido un mensaje de log de un nodo en determinado momento.
         
-    update(Node, Time, Clock)->
-        Clock!{update,Node,Time}.
+        
+    update(From, Time, Clock)->
+        %retorna un reloj que haya sido actualizado dado que hemos recibido un mensaje de log de un nodo en determinado momento.
+%        Clock!{update,Node,Time}.
+        lists:keyreplace(From,1,Clock,{From,Time}).
 
-    %retorna true o false si es seguro enviar el mensaje de log de un evento que ocurrió en el tiempo Time dado.
-    safe(Time, Clock)->
-        ClockTime=Clock:value(),
-        if 
-            Time==ClockTime -> true;
-            Time/=ClockTime -> false
-        end.
+    
+    
+    safe (Time, Clock)->
+        %retorna True si es seguro imprimir mensajes con Time dado
+        lists:all(fun(Node)->element(2, Node) > Time end,Clock).
