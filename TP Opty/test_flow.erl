@@ -23,29 +23,28 @@ run() ->
   end,
   % Caso 2: Transacción con conflicto de escritura
   io:format("Caso 2: Transacción con conflicto de escritura~n"),
-  Pid2 = server:open(Server),
-  Pid3 = server:open(Server),
-  Pid2 ! {read, ref3, 1},
-  Pid3 ! {read, ref4, 1},
+  T2 = server:open(Server),
+  T3 = server:open(Server),
+  Ref5 = make_ref(),
+  Ref6 = make_ref(),
+  T2 ! {write, 1, 100},
+  T2 ! {read, Ref5, 1},
   receive
-    {ref3, ok, Value2} ->
-      io:format("Transacción 2 lectura exitosa: ~p~n", [Value2])
+    {Ref5, ok, Value2} ->
+      io:format("Lectura exitosa ReadValue: ~p~n", [Value2]),
+      T3 ! {write, 1, Value2 + 1}
   end,
+  T2 ! {commit, Ref5},
   receive
-    {ref4, ok, Value3} ->
-      io:format("Transacción 3 lectura exitosa: ~p~n", [Value3])
-  end,
-  Pid2 ! {write, 1, 100},
-  Pid3 ! {write, 1, 200},
-  Pid2 ! {commit, ref5},
-  receive
-    {ref5, ok} ->
+    {Ref5, ok} ->
       io:format("Transacción 2 commit exitoso.~n")
   end,
-  Pid3 ! {commit, ref6},
+  T3 ! {commit, Ref6},
   receive
-    {ref6, abort} ->
-      io:format("Transacción 3 abortada por conflicto.~n")
+    {Ref6, abort} ->
+      io:format("Transacción 3 abortada por conflicto.~n");
+    {Ref6, ok} ->
+      io:format("Transacción 3 commit exitoso.~n")
   end,
 
   % Detener el servidor
