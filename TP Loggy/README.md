@@ -19,6 +19,10 @@ c(test).
 
 ```
 
+### Diagrama 
+![Diagrama de Loggy](./images/diagrama.png)
+
+
 #### Iniciamos el Test:
 
 ```test:run([sleep], [Jitter]).```
