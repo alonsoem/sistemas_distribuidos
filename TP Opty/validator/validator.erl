@@ -22,7 +22,6 @@ validator(Store) ->
       validator(Store)
   end.
 validate(Reads) ->
-  io:format("Validator: validating reads ~p~n", [Reads]),
   {N, Tag} = send_checks(Reads),
   check_reads(N, Tag).
 
@@ -43,10 +42,8 @@ check_reads(N, Tag) ->
     true ->
       receive
         {Tag, ok} ->
-          io:format("Validator: read check passed for tag ~p~n", [Tag]),
           check_reads(N - 1, Tag);
         {Tag, abort} ->
-          io:format("Validator: aborting transaction for tag ~p~n", [Tag]),
           abort
       end
   end.

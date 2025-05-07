@@ -30,3 +30,13 @@ ok
 ## Compilar todo previamente 
 test_flow:run().
 ```
+## Conclusiones del TP
+
+Implemenatmos pruebas de carga teniendo algunas consideraciones:
+Se hacen operaciones de lectura y escritura, donde el sleep entre ambas es aleatorio entre 0 y 100 ms.
+
+En la primera prueba leyendo y escribiendo sobre la misma posicion de la store la tasa de fallos dio altisima
+![img_1.png](img_1.png)
+En la segunda prueba leyendo y escribiendo sobre posiciones distintas de la store la tasa de fallos dio mas baja y sigue bajando a medida que se aumenta de tamaño la store.
+![img_2.png](img_2.png)
+Tambien observamos que la espera random que se haga entre lecturas y escrituras afecta tambien la tasa de fallos de los commits.
