@@ -31,7 +31,7 @@
 
     clock(Nodes)->
         %crea un clock y lo devuelve
-        lists:map(fun(A)->{A,0} end,Nodes).
+        lists:map(fun(A)->{A,zero()} end,Nodes).
               
         
     update(From, Time, Clock)->
