@@ -42,6 +42,8 @@ Se hizo necesario implementar una etiqueta con el tiempo de Lamport para poder p
 
 Una vez implementado mediante las funciones Zero/0, inc/1, merge/2 y leq/2 observamos que los mensajes se empezaron a visualizar pero desordenadamente producto de las demoras inducidas en los workers para enviar y escuchar los mensajes. Que el logger imprimiera los mensajes en el orden que los recibia tambien era parte del problema.
 
+![Logger imprimiendo los mensajes como llegaron](./images/unordered.png)
+
 Como cada worker puede enviar el mensaje en cualquier momento necesitamos saber en que momento podriamos comenzar a imprimir los mensajes.¿Si tengo 4 workers tengo que esperar 4 mensajes con un mismo timestamp para saber que los puedo imprimir? ¿Puede que reciba 4 mensajes con 4 timestamp distintos? ¿Si es asi se pueden imprimir? ¿Que necesito para entender que un mensaje es seguro de imprimir?
 
 Entonces implementamos un clock que permite mantener actualizado la etiqueta de tiempo que lleva cada worker. Pero eso no basta porque para poder imprimir un mensaje tengo que saber que no vendra posteriormente uno con una etiqueta anterior. Por este motivo implementamos una cola de retencion donde mantendremos los mensajes recibidos ordenados.
