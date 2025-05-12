@@ -1,7 +1,7 @@
  -module(worker).
     -export([start/5]).
 
-    -define(deadlock, 4000).
+    -define(deadlock, 5000).
 
     start(Name, Lock, Seed, Sleep, Work) ->
         spawn(fun() -> init(Name, Lock, Seed, Sleep, Work) end).
@@ -32,15 +32,19 @@
             taken ->
                 T2 = erlang:system_time(micro_seconds),
                 T = T2 - T1,
-                io:format("~w: lock taken in ~w ms~n",
+                io:format("~s: lock taken in ~w ms~n",
                           [Name, T div 1000]),
                 Gui ! taken,
                 timer:sleep(rand:uniform(Work)),
                 Gui ! leave,
                 Lock ! release,
-                {taken, T}
+                {taken, T};
+          {defer, _Ref} ->
+            % Reintentar después de un breve tiempo
+            timer:sleep(100),
+            critical(Name, Lock, Work, Gui)
         after ?deadlock ->
-                io:format("~w: giving up~n",[Name]),
+                io:format("~s: giving up~n",[Name]),
                 Lock ! release,
                 Gui ! leave,
                 no

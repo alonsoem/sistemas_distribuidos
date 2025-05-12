@@ -18,12 +18,14 @@
         ok.
 
     stop() ->
-        stop(w1), stop(w2), stop(w3), stop(w4).
+        stop(w1), stop(w2), stop(w3), stop(w4),
+        io:format("Todos los procesos detenidos~n").
 
     stop(Name) ->
         case whereis(Name) of
             undefined ->
                 ok;
             Pid ->
+                io:format("Deteniendo proceso ~p~n", [Name]),
                 Pid ! stop
         end.
