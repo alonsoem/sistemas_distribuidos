@@ -1,68 +1,92 @@
- -module(lock2).
+-module(lock2).
+-export([start/1]).
 
-    -export([start/1]).
+start(Id) ->
+  spawn(fun() -> init(Id) end).
 
-    start(Id) ->
-        spawn(fun() -> init(Id) end).
+init(Id) ->
+  receive
+    {peers, Peers} ->
+      open(Id, Peers);
+    stop ->
+      ok
+  end.
 
-    init(Priority) ->
-        receive
-            {peers, Peers} ->
-                open(Peers,Priority);
-            stop ->
-                ok
-        end.
+open(Id, Peers) ->
+  receive
+    {take, Master} ->
+      Refs = requests(Id, Peers),
+      wait(Id, Peers, Master, Refs, []);
+    {request, From, FromId, Ref} ->
+        if
+        FromId < Id ->
+          % Prioridad más alta → ceder inmediatamente
+          From ! {ok, Ref};
+          
+        true ->
+          % Prioridad menor → responder después
+          From ! {defer, Ref}
+          
+        end,
+        open(Id, Peers);
+      
+    stop ->
+      ok
+  end.
 
-    open(Nodes,MyPriority) ->
-        receive
-            {take, Master} ->
-                Refs = requests(Nodes, MyPriority),
-                wait(Nodes, Master, Refs, [], MyPriority);
-            {request, From, Ref, Priority} ->
-                io:format("request priority, mypriority: ~w ~w ~n", [Priority,MyPriority]),
-                if
-                    MyPriority > Priority ->
-                        From ! {ok, Ref}
-                end,
-                open(Nodes,MyPriority);
-                
-            stop ->
-                ok
-        end.
+requests(Id, Peers) ->
+  lists:map(fun(P) ->
+    R = make_ref(),
+    P ! {request, self(), Id, R},
+    R
+            end, Peers).
 
-    requests(Nodes, Priority) ->
-        lists:map(fun(P) ->
-                          R = make_ref(), 
-                          P ! {request, self(), R, Priority},
-                          R
-                  end, Nodes).
+wait(Id, Peers, Master, [], Waiting) ->
+  Master ! taken,
+  held(Id, Peers, Waiting);
 
-    wait(Nodes, Master, [], Waiting, MyPriority) ->
-        Master ! taken,
-        held(Nodes, Waiting, MyPriority);
+wait(Id, Peers, Master, Refs, Waiting) ->
+  receive
+    {ok, Ref} ->
+      Refs2 = lists:delete(Ref, Refs),
+      wait(Id, Peers, Master, Refs2, Waiting);
 
-    wait(Nodes, Master, Refs, Waiting, MyPriority) ->
-        receive
-            {request, From, Ref} ->
-                wait(Nodes, Master, Refs, [{From, Ref}|Waiting], MyPriority);
-            {ok, Ref} ->
-                Refs2 = lists:delete(Ref, Refs),
-                wait(Nodes, Master, Refs2, Waiting, MyPriority);
-            release ->
-                ok(Waiting),
-                open(Nodes, MyPriority)
-       end.
+    {request, From, FromId, Ref} ->
+      if
+        FromId < Id ->
+          % Prioridad más alta → ceder inmediatamente
+          From ! {ok, Ref},
+          wait(Id, Peers, Master, Refs, Waiting);
+        true ->
+          % Prioridad menor → responder después
+          From ! {defer, Ref},
+          wait(Id, Peers, Master, Refs, Waiting)
+      end;
 
-    ok(Waiting) ->
-        lists:foreach(fun({F,R}) -> F ! {ok, R} end, Waiting).
+    release ->
+      ok(Waiting),
+      open(Id, Peers)
+  after 5000 ->
+    % Evitar bloqueos por tiempo de espera
+    Master ! taken,
+    held(Id, Peers, Waiting)
+  end.
 
+held(Id, Peers, Waiting) ->
+  receive
+    {request, From, _FromId, Ref} ->
+      % Responder inmediatamente para evitar bloqueos
+      From ! {ok, Ref},
+      held(Id, Peers, Waiting);
 
- held(Nodes, Waiting, MyPriority) ->
-        receive
-            {request, From, Ref} ->
-                held(Nodes, [{From, Ref}|Waiting], MyPriority);
-            release ->
-                ok(Waiting),
-                open(Nodes, MyPriority)
-        end.
+    release ->
+      ok(Waiting),
+      open(Id, Peers)
+  after 5000 ->
+    % Liberar recursos automáticamente si no hay actividad
+    ok(Waiting),
+    open(Id, Peers)
+  end.
 
+ok(Waiting) ->
+  lists:foreach(fun({From, Ref}) -> From ! {ok, Ref} end, Waiting).
