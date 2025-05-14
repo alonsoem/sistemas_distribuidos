@@ -1,4 +1,4 @@
- -module(lock1).
+ -module(lock4).
 
     -export([start/1]).
 
@@ -16,6 +16,7 @@
     open(Nodes) ->
         receive
             {take, Master} ->
+                %Al recibir intencion de tomar la seccion critica le aviso a los otros locks
                 Refs = requests(Nodes),
                 wait(Nodes, Master, Refs, []);
             {request, From, Ref} ->
@@ -55,8 +56,7 @@
 
  held(Nodes, Waiting) ->
         receive
-            {request, From, Ref} ->
-                held(Nodes, [{From, Ref}|Waiting]);
+            
             release ->
                 ok(Waiting),
                 open(Nodes)
