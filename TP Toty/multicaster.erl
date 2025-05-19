@@ -1,6 +1,6 @@
 -module(multicaster).
 -export([start/0]).
--define(timeout, 5000).
+-define(timeout, 1000).
 
     start() ->
         Order=1,
@@ -37,13 +37,13 @@
 
 
     readMessages(Nodes, Queue)->
-            
-        if Queue==[] ->
+        SortedQueue= lists:keysort(1, Queue),            
+        if SortedQueue==[] ->
                 [];
             true ->
-                 Head=hd(Queue),
+                Head=hd(SortedQueue),
                 sendMessages(Nodes,Head),
-                tl(Queue)
+                tl(SortedQueue)
 
         end.
             
