@@ -22,9 +22,10 @@
         end.
 
     wait(Multicaster)->
-        io:format("waiting~n"),
+        
         receive
-            {received}->
+            {msg, Ref}->
+                io:format("Receive ~p~n",[Ref]),
                 wait(Multicaster);
 
             stop ->

@@ -1,5 +1,6 @@
 -module(multicaster).
 -export([start/0]).
+-define(timeout, 5000).
 
     start() ->
         Order=1,
@@ -16,9 +17,24 @@
                             %server(Master, Next, Nodes, Cast2, Queue, Jitter);
 
             {register,Node} ->
-                io:format("register ~p~n",[Node]),
+                            io:format("Registering ~p~n",[Node]),
                             Node ! registered,
-                            init(Order,Nodes)
+                            init(Order, [Node | Nodes]);
+
+            stop ->
+                    stop
+
+        after ? timeout ->    
+            sendMessages(Nodes),
+            init(Order,Nodes)
+            
                             
 
         end.
+
+    sendMessages(Nodes) ->
+        lists:map(fun(P) ->
+                          R = make_ref(), 
+                          P ! {msg, R},
+                          R
+                  end, Nodes).
