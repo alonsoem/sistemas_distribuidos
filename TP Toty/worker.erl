@@ -5,6 +5,7 @@
 
     start(Name, Multicaster) ->
         Sleep=rand:uniform(2000),
+        
         spawn(fun() -> init(Name, Multicaster, Sleep) end).
 
     init(Name, Multicaster, Sleep)->
@@ -16,8 +17,8 @@
         receive
             registered->
                 send(Name,Multicaster,Sleep),
-
-                run(Name, Multicaster, Sleep)
+                Gui = spawn(gui, init, [Name]),
+                run(Name, Multicaster, Sleep, Gui)
 
             after ?timeout ->       
                 io:format("Register Failed~n")
@@ -26,7 +27,7 @@
 
 
 
-    run(Name, Multicaster, Sleep)->
+    run(Name, Multicaster, Sleep, Gui)->
         
         receive
             {msg, {Id, From}}->
@@ -35,10 +36,11 @@
                 if 
                     From==MyId ->
                         send(Name,Multicaster,Sleep),
-                        run(Name, Multicaster, Sleep);
+                        Gui ! increment,
+                        run(Name, Multicaster, Sleep, Gui);
                     true -> 
                     
-                        run(Name, Multicaster, Sleep)
+                        run(Name, Multicaster, Sleep, Gui)
 
                 end;
                 
