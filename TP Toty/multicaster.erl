@@ -4,12 +4,12 @@
 
     start() ->
         Order=1,
-        spawn(fun() -> init(Order,[]) end).
+        spawn(fun() -> init(Order,[],[]) end).
     
-    init(Order, Nodes) ->
+    init(Order, Nodes, Queue) ->
         receive
-             {send, Msg} ->
-                            init(Order,Nodes);
+             {msg, Id, From} ->
+                            init(Order,Nodes,[{Id,From} | Queue]);
 
                             %Ref = make_ref(),
                            % request(?, ?, ?, ?),
@@ -19,22 +19,36 @@
             {register,Node} ->
                             io:format("Registering ~p~n",[Node]),
                             Node ! registered,
-                            init(Order, [Node | Nodes]);
+                            init(Order, [Node | Nodes],Queue);
 
             stop ->
                     stop
 
         after ? timeout ->    
-            sendMessages(Nodes),
-            init(Order,Nodes)
+            readMessages(Nodes,Queue),
+            init(Order,Nodes,Queue)
             
                             
 
         end.
 
-    sendMessages(Nodes) ->
-        lists:map(fun(P) ->
-                          R = make_ref(), 
-                          P ! {msg, R},
-                          R
+
+
+    readMessages(Nodes,Queue)->
+
+        lists:map(fun(Item) ->
+                          
+                          sendMessages(Nodes,Item),
+                          ok
+                  end, Queue).
+
+
+    sendMessages(Nodes,Message) ->
+    
+
+
+        lists:map(fun(Node) ->
+                          
+                          Node ! {msg, Message},
+                          ok
                   end, Nodes).

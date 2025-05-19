@@ -14,22 +14,31 @@
     hello(Multicaster)->
         receive
             registered->
-                wait(Multicaster)
+                run(Multicaster)
 
             after ?timeout ->       
                 io:format("Register Failed~n")
         
         end.
 
-    wait(Multicaster)->
+
+
+    run(Multicaster)->
         
         receive
             {msg, Ref}->
                 io:format("Receive ~p~n",[Ref]),
-                wait(Multicaster);
+                run(Multicaster);
 
             stop ->
                 stop() 
+        
+        after ?timeout ->     
+                Id = make_ref(), 
+                Multicaster ! {msg, Id, self()}  ,
+                io:format("Envio Mensaje ~n"),
+                run(Multicaster)
+    
         
         end.
 
