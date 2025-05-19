@@ -1,20 +1,22 @@
  -module(worker).
     -export([start/2]).
 
-    -define(timeout, 5000).
+    -define(timeout, 10000).
 
     start(Name, Multicaster) ->
-        spawn(fun() -> init(Multicaster) end).
+        spawn(fun() -> init(Name, Multicaster) end).
 
-    init(Multicaster)->
+    init(Name,Multicaster)->
         Multicaster ! {register, self()},
-        hello(Multicaster).
+        hello(Name, Multicaster).
 
 
-    hello(Multicaster)->
+    hello(Name,Multicaster)->
         receive
             registered->
-                run(Multicaster)
+                send(Name,Multicaster),
+
+                run(Name, Multicaster)
 
             after ?timeout ->       
                 io:format("Register Failed~n")
@@ -23,26 +25,36 @@
 
 
 
-    run(Multicaster)->
+    run(Name, Multicaster)->
         
         receive
-            {msg, Ref}->
-                io:format("Receive ~p~n",[Ref]),
-                run(Multicaster);
+            {msg, {Id, From}}->
+                io:format("~p Recibe ~p~n",[Name, {Id, From}]),
+                MyId=self(),
+                if 
+                    From==MyId ->
+                        send(Name,Multicaster),
+                        run(Name, Multicaster);
+                    true -> 
+                    
+                        run(Name, Multicaster)
 
+                end;
+                
+            
             stop ->
                 stop() 
         
-        after ?timeout ->     
-                Id = make_ref(), 
-                Multicaster ! {msg, Id, self()}  ,
-                io:format("Envio Mensaje ~n"),
-                run(Multicaster)
+
     
         
         end.
 
 
 
+    send(Name, Multicaster)->
+        SendId = make_ref(), 
+        Multicaster ! {msg, SendId, self()} ,
+        io:format("~p Envio Mensaje ~p~n",[Name,SendId]).
 
     stop()->ok.

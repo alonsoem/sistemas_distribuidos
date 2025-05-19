@@ -25,8 +25,8 @@
                     stop
 
         after ? timeout ->    
-            readMessages(Nodes,Queue),
-            init(Order,Nodes,Queue)
+            NewQueue = readMessages(Nodes,Queue),
+            init(Order,Nodes,NewQueue)
             
                             
 
@@ -34,18 +34,23 @@
 
 
 
-    readMessages(Nodes,Queue)->
 
-        lists:map(fun(Item) ->
-                          
-                          sendMessages(Nodes,Item),
-                          ok
-                  end, Queue).
+
+    readMessages(Nodes, Queue)->
+            
+        if Queue==[] ->
+                [];
+            true ->
+                 Head=hd(Queue),
+                sendMessages(Nodes,Head),
+                tl(Queue)
+
+        end.
+            
+       
 
 
     sendMessages(Nodes,Message) ->
-    
-
 
         lists:map(fun(Node) ->
                           
