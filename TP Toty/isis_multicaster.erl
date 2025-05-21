@@ -1,0 +1,79 @@
+-module(isis_multicaster).
+-export([start/0]).
+-define(timeout, 1000).
+
+start() ->
+  Order = 1,
+  spawn(fun() -> init(Order, [], [], [], #{}, #{}) end).
+
+init(Order, Multicasters, Workers, Queue, Proposals, Agreements) ->
+  receive
+  % Registro de workers
+    {register, Worker} ->
+      io:format("Registrando worker ~p~n", [Worker]),
+      Worker ! registered,
+      init(Order, Multicasters, [Worker | Workers], Queue, Proposals, Agreements);
+
+  % Registro de otros multicasters
+    {registerMulticaster, M} ->
+      io:format("Registrando multicaster ~p~n", [M]),
+      M ! {registeredMulticaster, self()},
+      init(Order, [M | Multicasters], Workers, Queue, Proposals, Agreements);
+
+  % Worker envía mensaje a multicaster
+    {msg, Id, From} ->
+      Content = {Id, From},
+      lists:foreach(fun(M) -> M ! {propose, Id, self(), Content} end, [self() | Multicasters]),
+      init(Order, Multicasters, Workers, Queue, Proposals, Agreements#{Id => {Content, From, 1, [Order]}});
+
+  % Recibe propuesta de orden de otro multicaster
+    {propose, Id, Orig, Content} ->
+      PropNum = Order + 1,
+      Orig ! {proposal, Id, PropNum, self()},
+      init(PropNum, Multicasters, Workers, Queue, Proposals, Agreements);
+
+  % Recibe propuesta de otro multicaster
+    {proposal, Id, PropNum, FromM} ->
+      case Agreements of
+        #{Id := {Content, Orig, Count, Props}} ->
+          NewCount = Count + 1,
+          NewProps = [PropNum | Props],
+          Total = length(Multicasters) + 1,
+          if NewCount == Total ->
+            FinalNum = lists:max(NewProps),
+            lists:foreach(fun(M) -> M ! {agreement, Id, FinalNum, Content, Orig} end, [self() | Multicasters]),
+            % Enviar a los workers inmediatamente tras el acuerdo
+            lists:foreach(fun(W) ->
+              io:format("Enviando mensaje ~p a worker ~p~n", [Id, W]),
+              W ! {msg, Content}
+                          end, Workers),
+            NewQueue = [{FinalNum, Id, Content, Orig} | Queue],
+            init(Order, Multicasters, Workers, NewQueue, Proposals, maps:remove(Id, Agreements));
+            true ->
+              init(Order, Multicasters, Workers, Queue, Proposals, Agreements#{Id => {Content, Orig, NewCount, NewProps}})
+          end;
+        _ -> init(Order, Multicasters, Workers, Queue, Proposals, Agreements)
+      end;
+
+  % Recibe el acuerdo final de orden
+    {agreement, Id, FinalNum, Content, Orig} ->
+      io:format("Recibiendo acuerdo de orden ~p de multicaster ~p~n", [FinalNum, Id]),
+      NewQueue = [{FinalNum, Id, Content, Orig} | Queue],
+      init(Order, Multicasters, Workers, NewQueue, Proposals, Agreements);
+
+    stop ->
+      stop
+
+  after ?timeout ->
+    % Entrega mensajes en orden total (ya no envía a los workers aquí)
+    SortedQueue = lists:sort(fun({N1,_,_,_}, {N2,_,_,_}) -> N1 =< N2 end, Queue),
+    case SortedQueue of
+      [] -> init(Order, Multicasters, Workers, Queue, Proposals, Agreements);
+      [{Num, Id, Content, Orig} | Rest] ->
+        if Num == Order + 1 ->
+          init(Num, Multicasters, Workers, Rest, Proposals, Agreements);
+          true ->
+            init(Order, Multicasters, Workers, Queue, Proposals, Agreements)
+        end
+    end
+  end.
