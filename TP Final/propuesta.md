@@ -77,3 +77,11 @@ El sistema debe ser capaz de manejar múltiples tipos de mensajes y garantizar l
 •	Excedió el número máximo de reintentos configurado (en algunos sistemas).
   
 Nuestra idea de alcance es comenzar apuntando a completar los primeros 4 estados, y si hay tiempo implementar los otros dos.
+
+
+### Prestar atencion a la robustez del sistema.
+
+### Plantear mejoras para hacerlo robusto.
+
+### Minimizar el impacto de las caidas, i.e. se cae una queue.
+### Implementar un sistema de persistencia de mensajes.
