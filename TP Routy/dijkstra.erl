@@ -1,10 +1,27 @@
 -module(dijkstra).
--export([update/4,entry/2,replace/4]).
+-export([update/4,entry/2,replace/4,route/2,table/2,iterate/3]).
 
 % update(Node, N, Gateway, Sorted): actualiza la lista Sorted con la
 % información de que Node puede ser alcanzado en N saltos usando Gateway.
 % Si no se encuentra una entrada, no se agrega la nueva entrada. Solo si
 % tenemos un mejor camino (más corto) reemplazamos la entrada existente.
+
+
+%Agregar un metodo que genere la tabla de ruteo en base a un map y una lista de gateways
+%quizas tenga que tener nombre table
+
+
+
+iterate(Sorted, Map, Table)->
+
+
+
+table(Gateways, Map) ->
+
+
+
+route(Node, Table)->
+
 
 entry(Node, Sorted)->
    case lists:keyfind(Node, 1, Sorted) of
@@ -22,7 +39,7 @@ entry(Node, Sorted)->
 replace(Node, N, Gateway, Sorted)->
   List = lists:keydelete(Node,1,Sorted),
   UpdatedList = [{Node,N,Gateway} | List],
-  
+  %agregar funcion lambda para ordenar por N
   SortedList = lists:sort(UpdatedList),
   SortedList.
   
