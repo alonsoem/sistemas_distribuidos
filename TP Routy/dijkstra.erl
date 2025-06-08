@@ -1,5 +1,5 @@
 -module(dijkstra).
--export([update/4,entry/2,replace/4,table/2,recorrerMap/1,route/2]).
+-export([update/4,entry/2,replace/4,table/2,recorrerMap/1,route/2,iterate/3]).
 
 % update(Node, N, Gateway, Sorted): actualiza la lista Sorted con la
 % información de que Node puede ser alcanzado en N saltos usando Gateway.
@@ -12,6 +12,19 @@
   %encontrar los nodos en el mapa que son alcanzables desde dicha
   %entrada y por cada nodo actualizar la lista ordenada. La entrada
   %tomada de la lista ordenada se agrega a la tabla de ruteo.
+
+
+iterate(Sorted, Map, Table)->
+  case Sorted of
+      [{Node, inf, Gateway} | Tail] -> Table;
+      [{Node, N, Gateway} | Tail]->
+                                ReachableList = lists:map(fun(X)-> {X,Gateway} end , map:reachable(Gateway,Map)),
+                                Reachables = [{Node,Gateway}|ReachableList],
+                                iterate(Tail, Map, lists:append([Reachables,Table]));
+      []->Table
+  end.
+
+    
 route(Node,Table)->
   case lists:keyfind(Node,1,Table) of
     {To,Gateway} -> {ok,Gateway};
@@ -20,10 +33,19 @@ route(Node,Table)->
   
 
 
+table(Gateways,Map)->
+  Nodes = map:all_nodes(Map),
+  Sorted= lists:map(fun(Gateway)-> 
+              case lists:member(Gateway, Gateways) of
+                true -> {Gateway,0,Gateway};
+                false -> {Gateway,inf,unknown}
+              end
+            end
+          ,Nodes),
+          Sorted.
 
 
-
-table(Gateways, Map) ->
+oldtable(Gateways, Map) ->
   FilteredMap= lists:filter(fun ({G,_})-> lists:member(G, Gateways) end,Map),
   TupleLists= lists:map(fun(X) -> recorrerMap(X) end , FilteredMap),
   lists:merge(TupleLists).

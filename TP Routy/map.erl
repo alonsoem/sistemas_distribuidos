@@ -23,4 +23,18 @@ reachable(Node, Map) ->
 %retorna la lista de todos los nodos del mapa, también aquellos sin
 %conexiones de salida
 all_nodes(Map) ->
-  lists:foldl(fun({Node, Links}, Rest) -> lists:append([[Node], Rest, Links]) end, [], Map).
+  lists:foldl(fun({Node, Links}, Rest) -> 
+
+                    AllNodes=[Node|Links],
+                    
+                    Filtered= lists:filter(
+                      fun(X)->
+                          not lists:member(X,Rest)
+                      end
+                      ,
+                      AllNodes),
+                    lists:append([Filtered,Rest])
+                  end                 
+                  
+                  , [], Map).
+
