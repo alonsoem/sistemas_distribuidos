@@ -20,8 +20,9 @@ router(Name, N, Hist, Intf, Table, Map) ->
     {add, Node, Pid} ->
       Ref = erlang:monitor(process, Pid),
       Intf1 = interface:add(Node, Ref, Pid, Intf),
-      Table1 = dijkstra:table(interface:list(Intf1), Map),
-      router(Name, N, Hist, Intf1, Table1, Map);
+      Map1 = map:update(Node, [Name], Map),
+      Table1 = dijkstra:table(interface:list(Intf1), Map1),
+      router(Name, N, Hist, Intf1, Table1, Map1);
 
     {remove, Node} ->
       {ok, Ref} = interface:ref(Node, Intf),
@@ -42,14 +43,9 @@ router(Name, N, Hist, Intf, Table, Map) ->
       From ! {status, {Name, N, Hist, Intf, Table, Map}},
       router(Name, N, Hist, Intf, Table, Map);
 
-  %% Inicia el ruteo de un mensaje desde un usuario local
-    {send, To, Message} ->
-      self() ! {route, To, Name, Message},
-      router(Name, N, Hist, Intf, Table, Map);
-
     %% El mensaje es para este router, se imprime y se espera otro mensaje
     {route, Name, _From, Message} ->
-      io:format("~w: received message ~w ~n", [Name, Message]),
+      io:format("~p: received message ~p ~n", [Name, Message]),
       router(Name, N, Hist, Intf, Table, Map);
 
   %% Rutea un mensaje hacia el destino usando la tabla de ruteo
@@ -70,6 +66,7 @@ router(Name, N, Hist, Intf, Table, Map) ->
 
     {send, To, Message} ->
       self() ! {route, To, Name, Message},
+      io:format("~p: sending message to ~p: ~p~n", [Name, To, Message]),
       router(Name, N, Hist, Intf, Table, Map);
 
     {links, Node, R, Links} ->
@@ -85,6 +82,7 @@ router(Name, N, Hist, Intf, Table, Map) ->
     broadcast ->
       Message = {links, Name, N, interface:list(Intf)},
       interface:broadcast(Message, Intf),
+      % io:format("~w: broadcast ~p ~p~n", [Name, Intf, Map]),
       router(Name, N+1, Hist, Intf, Table, Map);
 
     update ->

@@ -14,9 +14,9 @@ run() ->
   ),
 
   % Iniciar tres routers para probar rutas indirectas
-  routy:start(buenosaires, buenosaires),
-  routy:start(cordoba, cordoba),
-  routy:start(rosario, rosario),
+  routy:start(buenosaires, "buenosaires"),
+  routy:start(cordoba, "cordoba"),
+  routy:start(rosario, "rosario"),
 
   BuenosAires = erlang:whereis(buenosaires),
   Cordoba = erlang:whereis(cordoba),
@@ -33,10 +33,14 @@ run() ->
   Cordoba ! {add, rosario, Rosario},
   Rosario ! {add, cordoba, Cordoba},
 
-  % Linkear estados con distancias (ejemplo: 1 entre vecinos directos)
-  BuenosAires ! {links, buenosaires, 1, [cordoba]},
-  Cordoba ! {links, cordoba, 1, [buenosaires, rosario]},
-  Rosario ! {links, rosario, 1, [cordoba]},
+ BuenosAires ! broadcast,
+ Cordoba ! broadcast,
+ Rosario ! broadcast,
+
+  % Actualizar tablas de ruteo
+  BuenosAires ! update,
+  Cordoba ! update,
+  Rosario ! update,
 
   timer:sleep(200),
 
@@ -45,7 +49,7 @@ run() ->
     fun(R) ->
       R ! {status, self()},
       receive
-        {status, State} -> io:format("Estado de: ~p~n", [State])
+        {status, State} -> io:format("Estado de:~n", [])
       after 1000 -> io:format("Timeout esperando estado de ~p~n", [R])
       end
     end,
@@ -53,10 +57,10 @@ run() ->
   ),
 
   % Probar ruteo indirecto: BuenosAires -> Cordoba
-  BuenosAires ! {send, cordoba, {msg, "Indirecto BA a CBA", self()}},
+  BuenosAires ! {send, "buenosaires","Directo BA a CBA"},
 
   % Probar ruteo directo: BuenosAires -> Rosario (debe pasar por Cordoba)
-  BuenosAires ! {send, rosario, {msg, "Directo BA a ROS", self()}},
+  %BuenosAires ! {send, rosario, {msg, "Directo BA a ROS", self()}},
 
   % Parar routers
   lists:foreach(fun(R) -> R ! stop end, [BuenosAires, Cordoba, Rosario]),
