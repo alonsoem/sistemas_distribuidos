@@ -14,9 +14,9 @@ run() ->
   ),
 
   % Iniciar tres routers para probar rutas indirectas
-  routy:start(buenosaires, "buenosaires"),
-  routy:start(cordoba, "cordoba"),
-  routy:start(rosario, "rosario"),
+  routy:start(buenosaires, buenosaires),
+  routy:start(cordoba, cordoba),
+  routy:start(rosario, rosario),
 
   BuenosAires = erlang:whereis(buenosaires),
   Cordoba = erlang:whereis(cordoba),
@@ -57,12 +57,12 @@ run() ->
   ),
 
   % Probar ruteo indirecto: BuenosAires -> Cordoba
-  BuenosAires ! {send, "buenosaires","Directo BA a CBA"},
+  BuenosAires ! {send, cordoba,"Directo BA a CBA"},
 
   % Probar ruteo directo: BuenosAires -> Rosario (debe pasar por Cordoba)
   %BuenosAires ! {send, rosario, {msg, "Directo BA a ROS", self()}},
 
   % Parar routers
-  lists:foreach(fun(R) -> R ! stop end, [BuenosAires, Cordoba, Rosario]),
+  %lists:foreach(fun(R) -> R ! stop end, [BuenosAires, Cordoba, Rosario]),
 
   ok.

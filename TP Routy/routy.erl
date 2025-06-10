@@ -50,7 +50,7 @@ router(Name, N, Hist, Intf, Table, Map) ->
 
   %% Rutea un mensaje hacia el destino usando la tabla de ruteo
     {route, To, From, Message} ->
-      io:format("~w: routing message (~w)", [Name, Message]),
+      io:format("~p: routing message (~p)", [Name, Message]),
       case dijkstra:route(To, Table) of
         {ok, Gw} ->
           case interface:lookup(Gw, Intf) of
@@ -76,7 +76,7 @@ router(Name, N, Hist, Intf, Table, Map) ->
           Map1 = map:update(Node, Links, Map),
           router(Name, N, Hist1, Intf, Table, Map1);
         old ->
-          router(Name, N, Hist, Intf, Table, Map)
+          router(Name, N,Hist, Intf, Table, Map)
       end;
 
     broadcast ->
