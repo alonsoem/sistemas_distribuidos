@@ -1,5 +1,5 @@
 -module(dijkstra).
--export([update/4,entry/2,replace/4,table/2,recorrerMap/1,route/2,iterate/3]).
+-export([update/4,entry/2,replace/4,table/2,route/2,iterate/3]).
 
 % update(Node, N, Gateway, Sorted): actualiza la lista Sorted con la
 % información de que Node puede ser alcanzado en N saltos usando Gateway.
@@ -14,58 +14,6 @@
   %tomada de la lista ordenada se agrega a la tabla de ruteo.
 
 
-iterate(Sorted, Map, Table)->
-  case Sorted of
-      [{Node, inf, Gateway} | Tail] -> Table;
-      [{Node, N, Gateway} | Tail]->
-                                ReachableList = lists:map(fun(X)-> {X,Gateway} end , map:reachable(Gateway,Map)),
-                                Reachables = [{Node,Gateway}|ReachableList],
-                                iterate(Tail, Map, lists:append([Reachables,Table]));
-      []->Table
-  end.
-
-    
-route(Node,Table)->
-  case lists:keyfind(Node,1,Table) of
-    {To,Gateway} -> {ok,Gateway};
-    false -> notfound
-  end.
-  
-
-
-table(Gateways,Map)->
-  Nodes = map:all_nodes(Map),
-  Sorted= lists:map(fun(Gateway)-> 
-              case lists:member(Gateway, Gateways) of
-                true -> {Gateway,0,Gateway};
-                false -> {Gateway,inf,unknown}
-              end
-            end
-          ,Nodes),
-          Sorted.
-
-
-oldtable(Gateways, Map) ->
-  FilteredMap= lists:filter(fun ({G,_})-> lists:member(G, Gateways) end,Map),
-  TupleLists= lists:map(fun(X) -> recorrerMap(X) end , FilteredMap),
-  lists:merge(TupleLists).
-
-recorrerMap(GatewayLinks)->
-      case GatewayLinks of
-          {Gateway, Links} -> getLinks(Gateway,Links)
-      end.
-
-
-getLinks(G,L)->
-  case L of
-    [H|T] ->[{G,H}| getLinks(G,T)];
-    []->[]
-  end.
-
-
-%route(Node, Table)->
-
-
 entry(Node, Sorted)->
    case lists:keyfind(Node, 1, Sorted) of
     false ->
@@ -76,16 +24,12 @@ entry(Node, Sorted)->
 
    end.
 
-
-
-
 replace(Node, N, Gateway, Sorted)->
   List = lists:keydelete(Node,1,Sorted),
   UpdatedList = [{Node,N,Gateway} | List],
   %agregar funcion lambda para ordenar por N
   SortedList = lists:keysort(2, UpdatedList),
   SortedList.
-  
 
 
 update(Node, N,Gateway, Sorted) ->
@@ -106,3 +50,61 @@ update(Node, N,Gateway, Sorted) ->
           Sorted
       end
   end.
+  
+
+
+iterate(Sorted, Map, Table)->
+  case Sorted of
+      [{_, inf, _} | _] -> Table;
+      [{Node, N, Gateway} | Tail]->
+                               ReachableList = map:reachable(Gateway,Map),
+                               NewSorted= mutarSorted(Tail,ReachableList,N,Map,Gateway),
+                               iterate(NewSorted, Map, lists:append([[{Node,Gateway}],Table]));
+      []->Table
+  end.
+
+    
+
+mutarSorted(Sorted, Nodes, N, Map, Gateway)->
+ 
+  case Nodes of
+    [Node|Tail]->
+              Length= entry(Node,Sorted),
+    
+              if
+                  Length > N+1 -> 
+                      NewSorted=replace(Node, N+1, Gateway, Sorted),
+                      mutarSorted(NewSorted,Tail,N,Map,Gateway);
+                  true-> 
+                      mutarSorted(Sorted,Tail,N,Map,Gateway)
+              end;
+                  
+    []->Sorted
+  end.
+
+
+
+
+route(Node,Table)->
+  case lists:keyfind(Node,1,Table) of
+    {To,Gateway} -> {ok,Gateway};
+    false -> notfound
+  end.
+  
+
+
+table(Gateways,Map)->
+  Nodes = map:all_nodes(Map),
+  NotSorted= lists:map(fun(Gateway)-> 
+              case lists:member(Gateway, Gateways) of
+                true -> {Gateway,0,Gateway};
+                false -> {Gateway,inf,unknown}
+              end
+            end
+          ,Nodes),
+
+  Sorted = lists:sort(fun({_,N1,_}, {_,N2,_}) -> N1 =< N2 end, NotSorted),
+          io:format("sorted y map ~p ~p  ~n", [Sorted,Map]),
+          
+          iterate(Sorted,Map,[]).
+          

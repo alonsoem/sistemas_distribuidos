@@ -229,7 +229,7 @@ Este es un test sobre la función `iterate`:
     > dijkstra:iterate([{paris, 0, paris}, {berlin, inf, unknown}],
            [{paris, [berlin]}], []).
     [{paris, paris},{berlin,paris}]
-```
+````
 
 Ahora en el mismo módulo implementar la función `table/2` que toma una
 lista de gateways y un mapa y produce una tabla de ruteo con una entrada por
