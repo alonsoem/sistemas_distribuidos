@@ -58,8 +58,10 @@ run() ->
   % Probar ruteo indirecto: BuenosAires -> BuenosAires
   BuenosAires ! {send, buenosaires,"Mensaje a si mismo"},
   timer:sleep(1000),
+
   BuenosAires ! {send, rosario,"Mensaje a vecino"},
   timer:sleep(1000),
   BuenosAires ! {send, cordoba,"Mensaje indirecto a cordoba"},
+
 
   ok.

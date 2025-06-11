@@ -1,5 +1,5 @@
 -module(dijkstra).
--export([update/4,entry/2,replace/4,table/2,recorrerMap/1,route/2,iterate/3]).
+-export([update/4,entry/2,replace/4,table/2,route/2,iterate/3]).
 
 % update(Node, N, Gateway, Sorted): actualiza la lista Sorted con la
 % información de que Node puede ser alcanzado en N saltos usando Gateway.
@@ -55,16 +55,11 @@ update(Node, N,Gateway, Sorted) ->
 
 iterate(Sorted, Map, Table)->
   case Sorted of
-      [{Node, inf, Gateway} | Tail] -> Table;
+      [{_, inf, _} | _] -> Table;
       [{Node, N, Gateway} | Tail]->
-                                ReachableList = map:reachable(Gateway,Map),
-                               %tomo uno y distancia de ese es mayor a 1 lo reemplazamos
+                               ReachableList = map:reachable(Gateway,Map),
                                NewSorted= mutarSorted(Tail,ReachableList,N,Map,Gateway),
-                                                 
-                                                
-                                  
-                                
-                                iterate(NewSorted, Map, lists:append([[{Node,Gateway}],Table]));
+                               iterate(NewSorted, Map, lists:append([[{Node,Gateway}],Table]));
       []->Table
   end.
 
@@ -100,37 +95,16 @@ route(Node,Table)->
 
 table(Gateways,Map)->
   Nodes = map:all_nodes(Map),
-  Sorted= lists:map(fun(Gateway)-> 
+  NotSorted= lists:map(fun(Gateway)-> 
               case lists:member(Gateway, Gateways) of
                 true -> {Gateway,0,Gateway};
                 false -> {Gateway,inf,unknown}
               end
             end
           ,Nodes),
+
+  Sorted = lists:sort(fun({_,N1,_}, {_,N2,_}) -> N1 =< N2 end, NotSorted),
+          io:format("sorted y map ~p ~p  ~n", [Sorted,Map]),
+          
           iterate(Sorted,Map,[]).
           
-
-
-oldtable(Gateways, Map) ->
-  FilteredMap= lists:filter(fun ({G,_})-> lists:member(G, Gateways) end,Map),
-  TupleLists= lists:map(fun(X) -> recorrerMap(X) end , FilteredMap),
-  lists:merge(TupleLists).
-
-recorrerMap(GatewayLinks)->
-      case GatewayLinks of
-          {Gateway, Links} -> getLinks(Gateway,Links)
-      end.
-
-
-getLinks(G,L)->
-  case L of
-    [H|T] ->[{G,H}| getLinks(G,T)];
-    []->[]
-  end.
-
-
-%route(Node, Table)->
-
-
-
-
