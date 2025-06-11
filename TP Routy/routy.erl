@@ -36,7 +36,7 @@ router(Name, N, Hist, Intf, Table, Map) ->
   %% Maneja la caída de un proceso enlazado (DOWN)
     {'DOWN', Ref, process, _, _} ->
       {ok, Down} = interface:name(Ref, Intf),
-      io:format("~w: exit recived from ~w~n", [Name, Down]),
+      io:format("~w: exit received from ~w~n", [Name, Down]),
       Intf1 = interface:remove(Down, Intf),
       router(Name, N, Hist, Intf1, Table, Map);
 
@@ -95,6 +95,17 @@ router(Name, N, Hist, Intf, Table, Map) ->
     update ->
       Table1 = dijkstra:table(interface:list(Intf), Map),
       router(Name, N, Hist, Intf, Table1, Map);
+
+    table ->
+      io:format("~p Table:  ~p ~n", [Name, Table]),
+      router(Name, N, Hist, Intf, Table, Map);
+    interface ->
+        io:format("~p Interface:  ~p ~n", [Name, interface:list(Intf)]),
+        
+        router(Name, N, Hist, Intf, Table, Map);
+    map ->
+      io:format("~p MAP:  ~p ~n", [Name, Map]),
+      router(Name, N, Hist, Intf, Table, Map);
   %% Detiene el router
     stop ->
       ok
