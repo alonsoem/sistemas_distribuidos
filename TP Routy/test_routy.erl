@@ -32,14 +32,16 @@ run() ->
   Rosario ! {add, cordoba, Cordoba},
   Cordoba ! {add, rosario, Rosario},
 
- BuenosAires ! broadcast,
- Cordoba ! broadcast,
- Rosario ! broadcast,
+ %ahora el broadcast lo hace siempre que recibe un add
+ 
+ %BuenosAires ! broadcast,
+ %Cordoba ! broadcast,
+ %Rosario ! broadcast,
 
   % Actualizar tablas de ruteo
-  BuenosAires ! update,
-  Cordoba ! update,
-  Rosario ! update,
+  %BuenosAires ! update,
+  %Cordoba ! update,
+  %Rosario ! update,
 
   timer:sleep(200),
 

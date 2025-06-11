@@ -104,7 +104,6 @@ table(Gateways,Map)->
           ,Nodes),
 
   Sorted = lists:sort(fun({_,N1,_}, {_,N2,_}) -> N1 =< N2 end, NotSorted),
-          io:format("sorted y map ~p ~p  ~n", [Sorted,Map]),
           
           iterate(Sorted,Map,[]).
           

@@ -22,6 +22,8 @@ router(Name, N, Hist, Intf, Table, Map) ->
       Intf1 = interface:add(Node, Ref, Pid, Intf),
       Map1 = map:update(Node, [Name], Map),
       Table1 = dijkstra:table(interface:list(Intf1), Map1),
+
+      self()!broadcast,
       router(Name, N, Hist, Intf1, Table1, Map1);
 
     {remove, Node} ->
@@ -75,11 +77,11 @@ router(Name, N, Hist, Intf, Table, Map) ->
           io:format("~w: new link from ~p to ~p with links ~p~n", [Name, Node, R, Links]),
           interface:broadcast({links, Node, R, Links}, Intf),
           Map1 = map:update(Node, Links, Map),
-          io:format("~p map update ~p ~p  ~n", [Name,Map1,Table]),
-          io:format("~p interface ~p  ~n", [Name,interface:list(Intf)]),
-          Table1=dijkstra:table(interface:list(Intf),Map1),
+          %io:format("~p map update ~p ~p  ~n", [Name,Map1,Table]),
+          %io:format("~p interface ~p  ~n", [Name,interface:list(Intf)]),
+          self() ! update,
 
-          router(Name, N, Hist1, Intf, Table1, Map1);
+          router(Name, N, Hist1, Intf, Table, Map1);
         old ->
           router(Name, N,Hist, Intf, Table, Map)
       end;
