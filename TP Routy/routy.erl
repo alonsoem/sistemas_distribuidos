@@ -50,28 +50,29 @@ router(Name, N, Hist, Intf, Table, Map) ->
 
   %% Rutea un mensaje hacia el destino usando la tabla de ruteo
     {route, To, From, Message} ->
-      io:format("~p: routing message (~p)", [Name, Message]),
       case dijkstra:route(To, Table) of
         {ok, Gw} ->
           case interface:lookup(Gw, Intf) of
             {ok, Pid} ->
+              io:format("~p: routing message ~p to ~p via ~p~n", [Name, Message, Pid, Gw]),
               Pid ! {route, To, From, Message};
             notfound ->
               ok
           end;
         notfound ->
+          io:format("~p: no route to ~p~n", [Name, To]),
           ok
       end,
       router(Name, N, Hist, Intf, Table, Map);
 
     {send, To, Message} ->
       self() ! {route, To, Name, Message},
-      io:format("~p: sending message to ~p: ~p~n", [Name, To, Message]),
       router(Name, N, Hist, Intf, Table, Map);
 
     {links, Node, R, Links} ->
       case history:update(Node, R, Hist) of
         {new, Hist1} ->
+          io:format("~w: new link from ~p to ~p with links ~p~n", [Name, Node, R, Links]),
           interface:broadcast({links, Node, R, Links}, Intf),
           Map1 = map:update(Node, Links, Map),
           router(Name, N, Hist1, Intf, Table, Map1);
@@ -82,7 +83,7 @@ router(Name, N, Hist, Intf, Table, Map) ->
     broadcast ->
       Message = {links, Name, N, interface:list(Intf)},
       interface:broadcast(Message, Intf),
-      % io:format("~w: broadcast ~p ~p~n", [Name, Intf, Map]),
+      %%io:format("~w: broadcast ~p ~p~n", [Name, Intf, Map]),
       router(Name, N+1, Hist, Intf, Table, Map);
 
     update ->

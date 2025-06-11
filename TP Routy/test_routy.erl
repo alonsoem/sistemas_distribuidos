@@ -26,12 +26,11 @@ run() ->
   io:format("Cordoba PID: ~p~n", [Cordoba]),
   io:format("Rosario PID: ~p~n", [Rosario]),
 
-  % Conectar routers en cadena: BA <-> CBA <-> ROS
-  % Conectar routers en cadena: BA <-> CBA <-> ROS
-  BuenosAires ! {add, cordoba, Cordoba},
-  Cordoba ! {add, buenosaires, BuenosAires},
-  Cordoba ! {add, rosario, Rosario},
+  % Conectar routers en cadena: BA <-> ROS <-> CBA
+  BuenosAires ! {add, rosario, Rosario},
+  Rosario ! {add, buenosaires, BuenosAires},
   Rosario ! {add, cordoba, Cordoba},
+  Cordoba ! {add, rosario, Rosario},
 
  BuenosAires ! broadcast,
  Cordoba ! broadcast,
@@ -49,20 +48,18 @@ run() ->
     fun(R) ->
       R ! {status, self()},
       receive
-        {status, State} -> io:format("Estado de:~n", [])
+        {status, {Name, N, Hist, Intf, Table, Map}} -> io:format("Tabla de ~p: ~p~n", [Name,Table])
       after 1000 -> io:format("Timeout esperando estado de ~p~n", [R])
       end
     end,
     [BuenosAires, Cordoba, Rosario]
   ),
 
-  % Probar ruteo indirecto: BuenosAires -> Cordoba
-  BuenosAires ! {send, cordoba,"Directo BA a CBA"},
-
-  % Probar ruteo directo: BuenosAires -> Rosario (debe pasar por Cordoba)
-  %BuenosAires ! {send, rosario, {msg, "Directo BA a ROS", self()}},
-
-  % Parar routers
-  %lists:foreach(fun(R) -> R ! stop end, [BuenosAires, Cordoba, Rosario]),
+  % Probar ruteo indirecto: BuenosAires -> BuenosAires
+  BuenosAires ! {send, buenosaires,"Mensaje a si mismo"},
+  timer:sleep(1000),
+  BuenosAires ! {send, rosario,"Mensaje a vecino"},
+  timer:sleep(1000),
+  BuenosAires ! {send, cordoba,"Mensaje indirecto a cordoba"},
 
   ok.
