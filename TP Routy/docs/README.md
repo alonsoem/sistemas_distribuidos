@@ -55,4 +55,13 @@ Implementamos la actualización automática de la tabla de ruteo al incluir cone
 
 Ya mas avanzados comenzamos a realizar algunas pruebas y encontramos cosas por corregir. Desde las comillas que estabamos poniendo al crear un routy a la modificación del método iterate de dijkstra.
 
+Una de las complejidades del TP fue la alta interaccion entre los módulos y la cantidad de modulos que eran,
+nos resulto dificil debuggear y encontrar fallas en el flujo utilizando solamente io:format, nos llevamos para 
+el proximo TP final quiza utilizar algun tipo de debugger para poder mejorar la velocidad y el entendimiento de los errores.
 
+Encontramos la consigna un poco confusa, pero al leerla varias veces y discutirla en grupo logramos entenderla.
+
+## Respuesta a la pregunta sobre el monitoreo de nodos
+Cuando un nodo se desconecta, el monitor `(Ref = erlang:monitor(process, Pid))` detecta la caída del proceso y envía un mensaje DOWN al router.
+Este mensaje se maneja inmediatamente en el ciclo de recepción del router,
+permitiendo actualizar las interfaces y la topología de la red casi en tiempo real. Por eso, la propagación del evento de desconexión es prácticamente instantánea desde que Erlang detecta la caída del proceso monitoreado.
