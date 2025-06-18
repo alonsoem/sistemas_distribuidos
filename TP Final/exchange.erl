@@ -8,7 +8,7 @@ start(Name, Type) ->
     spawn(fun() -> init(Name, Type, [], []) end).
 init(Name, Type, Messages, Bindings)->
     receive
-        {msg, RoutingKey, Body} ->
+        {msg, Body, RoutingKey} ->
             io:format("Exchange ~p (~p) recibio Mensaje con routing_key ~p: ~p~n", [Name, Type, RoutingKey, Body]),
             case Type of
                 fanout ->
@@ -17,10 +17,6 @@ init(Name, Type, Messages, Bindings)->
                     route_message(RoutingKey, Body, Bindings)
             end,
             init(Name, Type, [Body|Messages], Bindings);
-%%        {msg, Body} ->
-%%            io:format("Exchange ~p (~p) recibio Mensaje: ~p~n", [Name, Type, Body]),
-%%            broadcast_message(Body, Bindings),
-%%            init(Name, Type, [Body|Messages], Bindings);
         {last, From} ->
             case Messages of
                 [] ->
@@ -43,9 +39,9 @@ init(Name, Type, Messages, Bindings)->
     end.
 
 route_message(RoutingKey, Body, Bindings) ->
-    MatchingBindings = [Queue || {Queue, BindingKey} <- Bindings, BindingKey =:= RoutingKey],
-    [Queue ! {msg, Body} || Queue <- MatchingBindings].
+    MatchingBindings = lists:filter(fun({_, RK}) -> RK == RoutingKey end, Bindings),
+    [Queue ! {msg, Body, RoutingKey} || {Queue, _} <- MatchingBindings].
 
 broadcast_message(Body, Bindings) ->
     Queues = [Queue || {Queue, _} <- Bindings],
-    [Queue ! {msg, Body} || Queue <- Queues].
+    [Queue ! {msg, Body, none} || Queue <- Queues].
