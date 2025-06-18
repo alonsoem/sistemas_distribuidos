@@ -1,36 +1,25 @@
- -module(publisher).
-    -export([start/2]).
+-module(publisher).
+-export([start/3]).
 
-    -define(timeout, 10000).
+-define(timeout, 10000).
 
-    start(Name, Exchange) ->
-        Sleep=rand:uniform(2000),
-        
-        spawn(fun() -> init(Name, Exchange, Sleep) end).
+start(Name, Exchange, RoutingKey) ->
+  Sleep = rand:uniform(2000),
+  spawn(fun() -> init(Name, Exchange, Sleep, RoutingKey) end).
 
-    init(Name, Exchange, Sleep)->
-        receive
-        
-            last->
-                Exchange ! {last, self()};
-            
+init(Name, Exchange, Sleep, RoutingKey) ->
+  receive
+    stop ->
+      io:format("Deteniendo al publisher ~p~n", [Name]),
+      ok;
+    last ->
+      Exchange ! { last, self() },
+      init(Name, Exchange, Sleep, RoutingKey)
+after 2000 ->
+    send(Exchange, Sleep, RoutingKey, "Test message from " ++ Name),
+    init(Name, Exchange, Sleep, RoutingKey)
+end.
 
-
-            {msg, Body} ->
-                io:format("Exchange envio Mensaje  ~p~n",[Body])
-
-        after 2000 ->
-            send(Name, Exchange, Sleep)
-        end,
-        
-        init(Name,Exchange,Sleep).
-
-    send(Name, Exchange, Sleep)->
-        timer:sleep(rand:uniform(Sleep)),
-        
-        Exchange ! {msg,  self()}.
-
-    
-        
-
-    stop()->ok.
+send(Exchange, Sleep, RoutingKey, Body) ->
+  timer:sleep(rand:uniform(Sleep)),
+  Exchange ! {msg, RoutingKey, Body }.
