@@ -14,12 +14,12 @@ El sistema debe ser capaz de manejar múltiples tipos de mensajes y garantizar l
 
 ### Casos de prueba:
 
-- Prueba de publicación de mensaje:
-  - Publicar un mensaje y verificar que se recibe en el exchange.
-- Prueba de bindings
-  - Vincular exchanges con colas para generar un esquema de ruteo.
-- Prueba de ruteo:
-  - Publicar un mensaje en un exchange y verificar que se envía a la cola correcta.
+- Prueba de publicación de mensaje: ✅
+  - Publicar un mensaje y verificar que se recibe en el exchange. ✅
+- Prueba de bindings ✅
+  - Vincular exchanges con colas para generar un esquema de ruteo. ✅
+- Prueba de ruteo: ✅
+  - Publicar un mensaje en un exchange y verificar que se envía a la cola correcta.✅
   - Publicar un mensaje ens un exchange con múltiples colas y verificar que se envía a todas las colas.
 - Prueba de suscripcion:
   - Suscribirse a un mensaje y verificar que se recibe.
