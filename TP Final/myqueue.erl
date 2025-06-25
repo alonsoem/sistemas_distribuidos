@@ -7,6 +7,6 @@ start(Name) ->
 init(Name, Messages) ->
   receive
     {msg, Body, _} ->
-      io:format("Queue ~p recibio Mensaje  ~w~n", [Name, Body]),
+      io:format("Queue ~p recibio Mensaje  ~p~n", [Name, Body]),
       init(Name, [Body | Messages])
   end.

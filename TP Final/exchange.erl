@@ -39,7 +39,16 @@ init(Name, Type, Messages, Bindings)->
     end.
 
 route_message(RoutingKey, Body, Bindings) ->
-    MatchingBindings = lists:filter(fun({_, RK}) -> RK == RoutingKey end, Bindings),
+    MatchingBindings = lists:filter(
+        %% Verifica si la binding coincide con el routing key (acepta atoms y strings)
+        fun({_, RK}) ->
+            RKStr = case is_atom(RK) of
+                        true -> atom_to_list(RK);
+                        false -> RK
+                    end,
+            re:run(atom_to_list(RoutingKey), RKStr, [{capture, none}]) =/= nomatch
+        end
+        , Bindings),
     [Queue ! {msg, Body, RoutingKey} || {Queue, _} <- MatchingBindings].
 
 broadcast_message(Body, Bindings) ->
