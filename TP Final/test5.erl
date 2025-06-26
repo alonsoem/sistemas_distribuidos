@@ -11,6 +11,7 @@ start() ->
   E1 ! { bind, Q1, rk1 },
   E1 ! { bind, Q2, rk2 },
   C1 = consumer:start("Paul",[Q1, Q2]),
+  C2 = consumer:start("Ringo",[Q1]),
   E1 ! {msg, "Mensaje 1", rk1},
 
   E1 ! {msg, "Mensaje 2", rk2}.
