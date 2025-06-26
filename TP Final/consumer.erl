@@ -7,20 +7,34 @@ start(Name, Queue) ->
   spawn(fun() -> init(Name, Queue) end).
 
 init(Name, Queue)->
-  Queue ! {subscribe , self() },
+  multicastSubscription(Queue),
   waitSubscriptionAck(Name,Queue).
 
+
+multicastSubscription(Queue)->
+  case Queue of
+    []->
+      ok;
+    
+    [Head|Tail]->
+      Head ! {subscribe , self() },
+      multicastSubscription(Tail)
+  end.
+  
 waitSubscriptionAck(Name,Queue)->
   receive
     acksubsc -> 
     io:format("~p suscripto! ~n", [Name]),
     loop(Name,Queue)
   after 2000 ->
-    io:format("~p No pudo ser subscripto en tiempo ~n", [Name])
+    io:format("~p No pudo ser subscripto a al menos una Queue a tiempo ~n", [Name])
   end.
 
 loop(Name, Queue) ->
   receive
+    acksubsc -> 
+      io:format("~p suscripto! ~n", [Name]),
+      loop(Name,Queue);
     {msg,Body} -> 
       io:format("~p recibió el mensaje ~p~n", [Name,Body]),
       loop(Name, Queue);

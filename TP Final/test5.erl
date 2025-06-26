@@ -6,8 +6,13 @@ start() ->
   % Suscribirse a un mensaje y verificar que se recibe.
   E1 = exchange:start(ex1),
   Q1 = myqueue:start(q1),
+  Q2 = myqueue:start(q2),
+
   E1 ! { bind, Q1, rk1 },
-  C1 = consumer:start("Paul",Q1),
-  E1 ! {msg, "Mensaje 1", rk1}.
+  E1 ! { bind, Q2, rk2 },
+  C1 = consumer:start("Paul",[Q1, Q2]),
+  E1 ! {msg, "Mensaje 1", rk1},
+
+  E1 ! {msg, "Mensaje 2", rk2}.
 
   
