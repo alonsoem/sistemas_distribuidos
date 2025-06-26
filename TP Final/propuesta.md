@@ -15,24 +15,24 @@ El sistema debe ser capaz de manejar múltiples tipos de mensajes y garantizar l
 ### Casos de prueba:
 
 - Prueba de publicación de mensaje: ✅
-  - Publicar un mensaje y verificar que se recibe en el exchange. ✅
+  - 1_ Publicar un mensaje y verificar que se recibe en el exchange. ✅
 - Prueba de bindings ✅
-  - Vincular exchanges con colas para generar un esquema de ruteo. ✅
+  - 2_ Vincular exchanges con colas para generar un esquema de ruteo. ✅
 - Prueba de ruteo: ✅
-  - Publicar un mensaje en un exchange y verificar que se envía a la cola correcta.✅
-  - Publicar un mensaje ens un exchange con múltiples colas y verificar que se envía a todas las colas.
+  - 3_ Publicar un mensaje en un exchange y verificar que se envía a la cola correcta.✅
+  - 4_ Publicar un mensaje ens un exchange con múltiples colas y verificar que se envía a todas las colas.✅
 - Prueba de suscripcion:
-  - Suscribirse a un mensaje y verificar que se recibe.
-  - Suscribirse a varios mensajes y verificar que se reciben en el orden correcto.
+  - 5_ Suscribirse a un mensaje y verificar que se recibe.✅
+  - 6_ Suscribirse a varios mensajes y verificar que se reciben en el orden correcto.
 - Prueba de consumo de mensajes:
-  - Verificar que el mensaje es consumido por un subscriber y se pone en estado UNACKED(no reconocido).
-  - Verificar que se elimine el mensaje cuando se hace ACK(reconocido por el subscriber).
-  - Verificar que se mantenga el mensaje en la cola si se hace NACK (Reconocido con fallos por el subscriber, reprocesar)
+  - 7_ Verificar que el mensaje es consumido por un subscriber y se pone en estado UNACKED(no reconocido).
+  - 8_ Verificar que se elimine el mensaje cuando se hace ACK(reconocido por el subscriber).
+  - 9_ Verificar que se mantenga el mensaje en la cola si se hace NACK (Reconocido con fallos por el subscriber, reprocesar)
 - Prueba de TTL (Time To Live):
-  - Publicar un mensaje con TTL y verificar que se elimina de la cola después de un tiempo.
-  - Publicar un mensaje sin TTL y verificar que se mantiene en la cola.
+  - 10_ Publicar un mensaje con TTL y verificar que se elimina de la cola después de un tiempo.
+  - 11_ Publicar un mensaje sin TTL y verificar que se mantiene en la cola.
 - Prueba de interfaz grafica
-  - Poder visualizar el estado del broker (suscriptores, colas, mensajes) en una UI simple.
+  - 12_ Poder visualizar el estado del broker (suscriptores, colas, mensajes) en una UI simple.
 
 
 ### Posibles estados de los mensajes:

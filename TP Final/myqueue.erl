@@ -12,6 +12,7 @@ init(Name, Messages, Consumers) ->
 
 
     {msg, Body, _} ->
+
       io:format("Queue ~p recibio Mensaje  ~w~n", [Name, Body]),
       init(Name, [Body | Messages], Consumers)
   end.
