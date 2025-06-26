@@ -8,6 +8,15 @@ init(Name, Messages, Consumers) ->
   receive
     {subscribe , From} -> 
       From ! acksubsc,
+       case Messages of
+        [] ->
+          init(Name, Messages, [From | Consumers]);
+        [Head | Tail] ->
+          From ! {msg, Head},
+          init(Name, Tail, [From | Consumers])
+
+      end,
+      
       init(Name,Messages,[From | Consumers]);
 
 
