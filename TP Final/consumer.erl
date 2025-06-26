@@ -13,7 +13,7 @@ init(Name, Queue)->
 waitSubscriptionAck(Name,Queue)->
   receive
     acksubsc -> 
-    io:format("~p Suscripto! ~n", [Name]),
+    io:format("~p suscripto! ~n", [Name]),
     loop(Name,Queue)
   after 2000 ->
     io:format("~p No pudo ser subscripto en tiempo ~n", [Name])

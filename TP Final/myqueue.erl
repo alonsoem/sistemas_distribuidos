@@ -12,7 +12,17 @@ init(Name, Messages, Consumers) ->
 
 
     {msg, Body, _} ->
-
       io:format("Queue ~p recibio Mensaje  ~w~n", [Name, Body]),
-      init(Name, [Body | Messages], Consumers)
+      case Consumers of
+        [] ->
+          init(Name, [Body | Messages], Consumers);
+        [Head | Tail] ->
+          Head ! {msg, Body},
+          init(Name,Body,Tail)
+
+      end
+      
+      
   end.
+
+
