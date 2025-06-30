@@ -1,4 +1,4 @@
--module(test_4).
+-module(test4).
 -export([start/0, stop/0]).
 
 %%
