@@ -1,7 +1,15 @@
 -module(myqueue).
--export([start/1, start/2]).
+-export([start/1, start/2, get_state/1]).
 
 -define(DEFAULT_TTL, 3000).
+
+get_state(Pid) ->
+  Pid ! {get_state, self()},
+  receive
+    {state, State} -> State
+  after 1000 ->
+    timeout
+  end.
 
 start(Name) ->
   start(Name, ?DEFAULT_TTL).
@@ -66,7 +74,11 @@ init(Name, Ready, Unacked, Consumers, DefaultTTL) ->
           init(Name, Ready, RestUnacked, Consumers, DefaultTTL);
         _ ->
           init(Name, Ready, Unacked, Consumers, DefaultTTL)
-      end
+      end;
+    {get_state, From} ->
+      State = #{ready => Ready, unacked => Unacked, consumers => Consumers, name => Name},
+      From ! {state, State},
+      init(Name, Ready, Unacked, Consumers, DefaultTTL)
   end.
 
 is_expired({_, Expiry}) ->

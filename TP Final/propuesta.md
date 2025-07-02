@@ -78,6 +78,9 @@ El sistema debe ser capaz de manejar múltiples tipos de mensajes y garantizar l
   
 Nuestra idea de alcance es comenzar apuntando a completar los primeros 4 estados, y si hay tiempo implementar los otros dos.
 
+### Entender para que sirve y que problema resuelve RabbitMQ
+- Ver docs de por que no se garantiza el orden
+
 
 ### Prestar atencion a la robustez del sistema.
 
