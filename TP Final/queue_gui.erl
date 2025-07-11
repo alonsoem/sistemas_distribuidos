@@ -1,4 +1,3 @@
-%% Archivo: TP%20Final/queue_gui.erl
 -module(queue_gui).
 
 -export([start/2, init/2]).
@@ -18,7 +17,6 @@ init(Name, QueuePid) ->
   Text = wxStaticText:new(Panel, -1, "Estado de la cola...", [{pos, {20, 20}}, {size, {360, 40}}]),
   wxStaticText:setFont(Text, Font),
   wxFrame:show(Frame),
-  %% Pedir el estado inicial
   self() ! update,
   loop(Frame, Text, QueuePid).
 
